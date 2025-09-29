@@ -16,7 +16,8 @@ A 3D walking game built with **React Three Fiber** and **Rapier.js** featuring i
 
 - **WASD** or **Arrow Keys**: Move around
 - **Space**: Jump
-- **Mouse**: Look around (camera follows automatically)
+- **Mouse**: Look around (first-person view with pointer lock)
+- **Click**: Activate pointer lock for mouse control
 
 ## 🚀 Getting Started
 

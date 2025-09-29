@@ -10,7 +10,7 @@ export default function Game() {
   return (
     <>
       <Environment />
-      <Terrain playerRef={playerRef} />
+      <Terrain />
       <Player ref={playerRef} />
     </>
   )
