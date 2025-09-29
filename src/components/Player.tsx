@@ -4,6 +4,7 @@ import { useKeyboardControls } from '@react-three/drei'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import { Vector3 } from 'three'
 import { Controls } from '../types/controls'
+import { getTerrainHeight } from '../utils/noise'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface PlayerProps {
@@ -17,12 +18,13 @@ const Player = forwardRef<{ position: Vector3 }, PlayerProps>((_props, ref) => {
   
   const velocity = useRef(new Vector3())
   const direction = useRef(new Vector3())
-  const currentPosition = useRef(new Vector3(0, 10, 0))
+  const currentPosition = useRef(new Vector3(0, 20, 0))
   
-  const MOVE_SPEED = 5
-  const JUMP_FORCE = 8
-  const CAMERA_HEIGHT = 1.8
-  const CAMERA_DISTANCE = 8
+  const MOVE_SPEED = 8
+  const JUMP_FORCE = 12
+  const CAMERA_HEIGHT = 2.5
+  const CAMERA_DISTANCE = 10
+  const CAMERA_LERP_SPEED = 3
 
   useImperativeHandle(ref, () => ({
     position: currentPosition.current
@@ -67,7 +69,7 @@ const Player = forwardRef<{ position: Vector3 }, PlayerProps>((_props, ref) => {
       }, true)
     }
     
-    // Third-person camera follow
+    // Third-person camera follow with better stability
     const cameraTarget = new Vector3(
       position.x,
       position.y + CAMERA_HEIGHT,
@@ -76,12 +78,12 @@ const Player = forwardRef<{ position: Vector3 }, PlayerProps>((_props, ref) => {
     
     const cameraPosition = new Vector3(
       position.x,
-      position.y + CAMERA_HEIGHT + 3,
+      position.y + CAMERA_HEIGHT + 5,
       position.z + CAMERA_DISTANCE
     )
     
-    // Smooth camera movement
-    camera.position.lerp(cameraPosition, delta * 5)
+    // Smoother camera movement to reduce jitter
+    camera.position.lerp(cameraPosition, delta * CAMERA_LERP_SPEED)
     camera.lookAt(cameraTarget)
     
     // Prevent player from falling too far
@@ -91,18 +93,25 @@ const Player = forwardRef<{ position: Vector3 }, PlayerProps>((_props, ref) => {
     }
   })
 
+  // Calculate safe spawn position above terrain
+  const spawnHeight = getTerrainHeight(0, 0) + 5
+  
   return (
     <RigidBody
       ref={rigidBody}
-      position={[0, 10, 0]}
+      position={[0, spawnHeight, 0]}
       enabledRotations={[false, false, false]} // Lock rotation
       type="dynamic"
       colliders="cuboid"
     >
-      {/* Player visual representation */}
+      {/* Player visual representation - cylinder geometry as requested */}
       <mesh castShadow>
-        <capsuleGeometry args={[0.5, 1.5]} />
-        <meshStandardMaterial color="#ff6b6b" />
+        <cylinderGeometry args={[0.5, 0.5, 1.8, 8]} />
+        <meshStandardMaterial 
+          color="#ff6b6b" 
+          roughness={0.3}
+          metalness={0.1}
+        />
       </mesh>
     </RigidBody>
   )

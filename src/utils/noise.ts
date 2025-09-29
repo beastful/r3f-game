@@ -11,13 +11,13 @@ export interface TerrainConfig {
   lacunarity: number
 }
 
-// Default terrain configuration
+// Default terrain configuration - gentler terrain for better physics
 export const defaultTerrainConfig: TerrainConfig = {
-  scale: 0.02,
-  amplitude: 8,
-  octaves: 4,
-  persistence: 0.5,
-  lacunarity: 2,
+  scale: 0.015,
+  amplitude: 5,
+  octaves: 3,
+  persistence: 0.4,
+  lacunarity: 1.8,
 }
 
 /**
