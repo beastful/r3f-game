@@ -9,6 +9,7 @@ import {
   Vector3
 } from 'three'
 import { getTerrainHeight } from '../utils/noise'
+import GrassSystem from './GrassSystem'
 
 interface TerrainProps {
   playerRef: React.MutableRefObject<{ position: Vector3 } | null>
@@ -199,6 +200,7 @@ export default function Terrain({ playerRef }: TerrainProps) {
 
   return (
     <>
+      {/* Terrain meshes */}
       {Array.from(chunksRef.current.values()).map((chunk) => (
         <RigidBody
           key={chunk.key}
@@ -211,6 +213,16 @@ export default function Terrain({ playerRef }: TerrainProps) {
             receiveShadow 
           />
         </RigidBody>
+      ))}
+      
+      {/* Grass systems for each chunk */}
+      {Array.from(chunksRef.current.values()).map((chunk) => (
+        <GrassSystem
+          key={`grass-${chunk.key}`}
+          chunkX={chunk.x}
+          chunkZ={chunk.z}
+          chunkSize={CHUNK_SIZE}
+        />
       ))}
     </>
   )
