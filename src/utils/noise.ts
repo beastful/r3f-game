@@ -23,20 +23,20 @@ export interface GrassConfig {
 
 // Enhanced terrain configuration with more variety
 export const defaultTerrainConfig: TerrainConfig = {
-  scale: 0.008,      // Reduced for larger features
-  amplitude: 8,      // Increased for more dramatic terrain
-  octaves: 5,        // More octaves for detail
-  persistence: 0.5,  // Better detail preservation
-  lacunarity: 2.0,   // Standard frequency multiplier
+  scale: 0.01,       // Slightly increased for more variation
+  amplitude: 12,     // Much more dramatic terrain
+  octaves: 4,        // Balanced detail
+  persistence: 0.6,  // Better detail preservation
+  lacunarity: 2.2,   // More frequency variation
 }
 
 // Grass placement configuration
 export const defaultGrassConfig: GrassConfig = {
-  scale: 0.05,       // Fine scale for grass patches
-  density: 0.3,      // 30% grass coverage
-  minHeight: -2,     // Grass starts above water level
-  maxHeight: 6,      // No grass on high peaks
-  maxSlope: 0.7,     // No grass on steep slopes
+  scale: 0.03,       // Larger grass patches
+  density: 0.6,      // 60% grass coverage - much more visible
+  minHeight: -5,     // Allow grass at lower heights
+  maxHeight: 12,     // Allow grass at higher elevations
+  maxSlope: 1.2,     // Allow grass on steeper slopes
 }
 
 /**
