@@ -1,11 +1,52 @@
-# React + TypeScript + Vite
+# 🎮 R3F Walking Game
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A 3D walking game built with **React Three Fiber** and **Rapier.js** featuring infinite world generation using Perlin noise.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **3D Physics World**: Built with React Three Fiber and Rapier.js for realistic physics
+- **Player Character**: Controllable character with WASD/arrow keys and Space to jump  
+- **Infinite Terrain**: Procedurally generated using fractal Perlin noise algorithms
+- **Chunk Streaming**: Efficient world loading/unloading based on player position
+- **Third-Person Camera**: Smooth camera that follows the player with interpolation
+- **Atmospheric Effects**: Dynamic lighting, shadows, and fog for immersion
+- **TypeScript**: Fully typed for better development experience
+
+## 🎮 Controls
+
+- **WASD** or **Arrow Keys**: Move around
+- **Space**: Jump
+- **Mouse**: Look around (camera follows automatically)
+
+## 🚀 Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production  
+npm run build
+
+# Run linting
+npm run lint
+```
+
+## 🏗️ Architecture
+
+### Core Components
+- **Game**: Main game orchestrator component
+- **Player**: Character physics and camera controls  
+- **Terrain**: Infinite chunk-based world generation
+- **Environment**: Lighting, fog, and atmospheric effects
+
+### Key Technologies
+- **React Three Fiber**: React wrapper for Three.js
+- **Rapier.js**: Physics engine for collision and movement
+- **Simplex Noise**: Perlin noise for realistic terrain generation
+- **TypeScript**: Type safety and better developer experience
 
 ## React Compiler
 
