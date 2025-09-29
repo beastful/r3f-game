@@ -105,10 +105,13 @@ export default function Terrain({ playerRef }: TerrainProps) {
             receiveShadow
           >
             <meshStandardMaterial 
-              color="#4a9" 
+              color="#4a7c59" 
               wireframe={false}
-              roughness={0.8}
-              metalness={0.1}
+              roughness={0.9}
+              metalness={0.0}
+              transparent={false}
+              opacity={1.0}
+              side={0} // THREE.FrontSide
             />
           </mesh>
         </RigidBody>
