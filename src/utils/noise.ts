@@ -1,7 +1,9 @@
 import { createNoise2D } from 'simplex-noise'
 
-// Initialize noise function
-const noise2D = createNoise2D()
+// Initialize multiple noise functions for different purposes
+const terrainNoise = createNoise2D()
+const grassNoise = createNoise2D()
+const detailNoise = createNoise2D()
 
 export interface TerrainConfig {
   scale: number
@@ -11,17 +13,34 @@ export interface TerrainConfig {
   lacunarity: number
 }
 
-// Default terrain configuration - gentler terrain for better physics
+export interface GrassConfig {
+  scale: number
+  density: number
+  minHeight: number
+  maxHeight: number
+  maxSlope: number
+}
+
+// Enhanced terrain configuration with more variety
 export const defaultTerrainConfig: TerrainConfig = {
-  scale: 0.015,
-  amplitude: 5,
-  octaves: 3,
-  persistence: 0.4,
-  lacunarity: 1.8,
+  scale: 0.008,      // Reduced for larger features
+  amplitude: 8,      // Increased for more dramatic terrain
+  octaves: 5,        // More octaves for detail
+  persistence: 0.5,  // Better detail preservation
+  lacunarity: 2.0,   // Standard frequency multiplier
+}
+
+// Grass placement configuration
+export const defaultGrassConfig: GrassConfig = {
+  scale: 0.05,       // Fine scale for grass patches
+  density: 0.3,      // 30% grass coverage
+  minHeight: -2,     // Grass starts above water level
+  maxHeight: 6,      // No grass on high peaks
+  maxSlope: 0.7,     // No grass on steep slopes
 }
 
 /**
- * Generate terrain height using fractal noise (multiple octaves)
+ * Generate terrain height using enhanced fractal noise with more variety
  */
 export function getTerrainHeight(x: number, z: number, config = defaultTerrainConfig): number {
   let height = 0
@@ -29,14 +48,58 @@ export function getTerrainHeight(x: number, z: number, config = defaultTerrainCo
   let frequency = config.scale
   let maxValue = 0
 
+  // Main terrain layers
   for (let i = 0; i < config.octaves; i++) {
-    height += noise2D(x * frequency, z * frequency) * amplitude
+    height += terrainNoise(x * frequency, z * frequency) * amplitude
     maxValue += amplitude
     amplitude *= config.persistence
     frequency *= config.lacunarity
   }
 
+  // Add fine detail layer for surface variation
+  height += detailNoise(x * 0.1, z * 0.1) * 0.8
+  
+  // Add some ridges and valleys for variety
+  const ridgeNoise = Math.abs(terrainNoise(x * 0.02, z * 0.02)) * 3
+  const valleyNoise = Math.pow(terrainNoise(x * 0.01, z * 0.01), 2) * -2
+  
+  height += ridgeNoise + valleyNoise
+
   return height / maxValue
+}
+
+/**
+ * Determine if grass should be placed at a given position
+ */
+export function shouldPlaceGrass(
+  x: number, 
+  z: number, 
+  terrainHeight: number, 
+  terrainSlope: number = 0,
+  config = defaultGrassConfig
+): boolean {
+  // Check height constraints
+  if (terrainHeight < config.minHeight || terrainHeight > config.maxHeight) {
+    return false
+  }
+  
+  // Check slope constraints (no grass on steep slopes)
+  if (terrainSlope > config.maxSlope) {
+    return false
+  }
+  
+  // Use noise to create grass patches
+  const grassValue = (grassNoise(x * config.scale, z * config.scale) + 1) / 2 // Normalize to 0-1
+  
+  return grassValue < config.density
+}
+
+/**
+ * Get grass density at a position (0-1 range)
+ */
+export function getGrassDensity(x: number, z: number, config = defaultGrassConfig): number {
+  const grassValue = (grassNoise(x * config.scale, z * config.scale) + 1) / 2
+  return Math.max(0, Math.min(1, grassValue))
 }
 
 /**
