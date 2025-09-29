@@ -54,8 +54,8 @@ export default function Terrain() {
         const c = a + resolution + 1
         const d = c + 1
         
-        indices.push(a, c, b)
-        indices.push(b, c, d)
+        indices.push(a, b, c)
+        indices.push(b, d, c)
       }
     }
     
