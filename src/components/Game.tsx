@@ -1,23 +1,21 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Vector3 } from 'three'
 import Player from './Player'
 import Terrain from './Terrain'
-import AtmosphericSky from './AtmosphericSky'
-import AtmosphericPostProcessing from './AtmosphericPostProcessing'
+import Environment from './Environment'
+import SimpleAtmosphericSky from './SimpleAtmosphericSky'
 
 export default function Game() {
   const playerRef = useRef<{ position: Vector3 } | null>(null)
-  const [timeOfDay] = useState(0.3) // Dawn/dusk for dramatic effect
 
   return (
     <>
-      {/* Replace Environment with AtmosphericSky for enhanced atmosphere */}
-      <AtmosphericSky timeOfDay={timeOfDay} />
+      {/* Essential lighting for terrain and models */}
+      <Environment />
+      {/* Simple blue-purple sky with white stars */}
+      <SimpleAtmosphericSky />
       <Terrain playerRef={playerRef} />
       <Player ref={playerRef} />
-      
-      {/* Add atmospheric post-processing effects */}
-      <AtmosphericPostProcessing timeOfDay={timeOfDay} enabled={true} />
     </>
   )
 }
