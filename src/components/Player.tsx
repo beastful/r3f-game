@@ -2,7 +2,7 @@ import { useRef, forwardRef, useImperativeHandle, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useKeyboardControls, PointerLockControls } from '@react-three/drei'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
-import { Vector3, Euler } from 'three'
+import { Vector3 } from 'three'
 import { Controls } from '../types/controls'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -17,7 +17,8 @@ const Player = forwardRef<{ position: Vector3 }, PlayerProps>((_props, ref) => {
   
   const currentPosition = useRef(new Vector3(0, 5, 0))
   
-  const MOVE_SPEED = 5
+  const WALK_SPEED = 5
+  const RUN_SPEED = 8
   const JUMP_FORCE = 8
 
   useImperativeHandle(ref, () => ({
@@ -32,7 +33,7 @@ const Player = forwardRef<{ position: Vector3 }, PlayerProps>((_props, ref) => {
   useFrame(() => {
     if (!rigidBody.current) return
 
-    const { forward, backward, left, right, jump } = get()
+    const { forward, backward, left, right, jump, run } = get()
     
     // Get current position and velocity
     const position = rigidBody.current.translation()
@@ -45,35 +46,56 @@ const Player = forwardRef<{ position: Vector3 }, PlayerProps>((_props, ref) => {
     camera.position.y = position.y + 1.8 // Eye height
     camera.position.z = position.z
     
-    // Movement direction based on camera orientation
-    const direction = new Vector3()
-    const euler = new Euler()
-    euler.setFromQuaternion(camera.quaternion)
+    // Camera-relative movement vectors
+    const cameraDirection = new Vector3()
+    const cameraRight = new Vector3()
     
-    if (forward) direction.z -= 1
-    if (backward) direction.z += 1
-    if (left) direction.x -= 1
-    if (right) direction.x += 1
+    // Get camera forward direction (ignoring pitch for ground movement)
+    camera.getWorldDirection(cameraDirection)
+    cameraDirection.y = 0 // Keep movement on ground plane
+    cameraDirection.normalize()
     
-    // Apply camera rotation to movement
-    if (direction.length() > 0) {
-      direction.normalize()
-      direction.applyEuler(new Euler(0, euler.y, 0)) // Only Y rotation for movement
+    // Get camera right direction for strafe movement
+    cameraRight.crossVectors(cameraDirection, new Vector3(0, 1, 0))
+    cameraRight.normalize()
+    
+    // Calculate movement direction based on input
+    const moveDirection = new Vector3()
+    
+    if (forward) {
+      moveDirection.add(cameraDirection)
+    }
+    if (backward) {
+      moveDirection.sub(cameraDirection)
+    }
+    if (right) {
+      moveDirection.add(cameraRight)
+    }
+    if (left) {
+      moveDirection.sub(cameraRight)
     }
     
-    // Apply movement
+    // Normalize diagonal movement to prevent speed boost
+    if (moveDirection.length() > 0) {
+      moveDirection.normalize()
+    }
+    
+    // Determine current speed (walking or running)
+    const currentSpeed = run ? RUN_SPEED : WALK_SPEED
+    
+    // Apply movement with proper camera-relative direction
     rigidBody.current.setLinvel({
-      x: direction.x * MOVE_SPEED,
+      x: moveDirection.x * currentSpeed,
       y: currentVelocity.y, // Preserve gravity
-      z: direction.z * MOVE_SPEED
+      z: moveDirection.z * currentSpeed
     }, true)
     
-    // Simple jumping
+    // Improved jumping with camera-relative momentum
     if (jump && Math.abs(currentVelocity.y) < 0.5) {
       rigidBody.current.setLinvel({ 
-        x: direction.x * MOVE_SPEED, 
+        x: moveDirection.x * currentSpeed, 
         y: JUMP_FORCE, 
-        z: direction.z * MOVE_SPEED 
+        z: moveDirection.z * currentSpeed 
       }, true)
     }
     
