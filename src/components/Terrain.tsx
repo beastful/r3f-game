@@ -8,9 +8,10 @@ import {
   Color,
   Vector3
 } from 'three'
-import { getTerrainHeight } from '../utils/noise'
+import { getTerrainHeight, terrainNoise } from '../utils/noise'
 import GrassSystem from './GrassSystem'
 import ModelSystem from './ModelSystem'
+import ProceduralStructures from './ProceduralStructures'
 
 interface TerrainProps {
   playerRef: React.MutableRefObject<{ position: Vector3 } | null>
@@ -244,6 +245,18 @@ export default function Terrain({ playerRef }: TerrainProps) {
           chunkX={chunk.x}
           chunkZ={chunk.z}
           chunkSize={CHUNK_SIZE}
+        />
+      ))}
+      
+      {/* Procedural Structures for each chunk */}
+      {Array.from(chunksRef.current.values()).map((chunk) => (
+        <ProceduralStructures
+          key={`structures-${chunk.key}`}
+          chunkX={chunk.x}
+          chunkZ={chunk.z}
+          chunkSize={CHUNK_SIZE}
+          heightMap={getTerrainHeight}
+          noise={terrainNoise}
         />
       ))}
     </>

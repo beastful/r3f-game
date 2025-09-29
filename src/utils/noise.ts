@@ -1,9 +1,12 @@
 import { createNoise2D } from 'simplex-noise'
 
 // Initialize multiple noise functions for different purposes
-const terrainNoise = createNoise2D()
+const terrainNoiseFunc = createNoise2D()
 const grassNoise = createNoise2D()
 const detailNoise = createNoise2D()
+
+// Export the terrain noise function for use in other components
+export const terrainNoise = terrainNoiseFunc
 
 export interface TerrainConfig {
   scale: number
@@ -50,7 +53,7 @@ export function getTerrainHeight(x: number, z: number, config = defaultTerrainCo
 
   // Main terrain layers
   for (let i = 0; i < config.octaves; i++) {
-    height += terrainNoise(x * frequency, z * frequency) * amplitude
+    height += terrainNoiseFunc(x * frequency, z * frequency) * amplitude
     maxValue += amplitude
     amplitude *= config.persistence
     frequency *= config.lacunarity
@@ -60,8 +63,8 @@ export function getTerrainHeight(x: number, z: number, config = defaultTerrainCo
   height += detailNoise(x * 0.1, z * 0.1) * 0.8
   
   // Add some ridges and valleys for variety
-  const ridgeNoise = Math.abs(terrainNoise(x * 0.02, z * 0.02)) * 3
-  const valleyNoise = Math.pow(terrainNoise(x * 0.01, z * 0.01), 2) * -2
+  const ridgeNoise = Math.abs(terrainNoiseFunc(x * 0.02, z * 0.02)) * 3
+  const valleyNoise = Math.pow(terrainNoiseFunc(x * 0.01, z * 0.01), 2) * -2
   
   height += ridgeNoise + valleyNoise
 

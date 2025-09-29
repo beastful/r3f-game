@@ -83,13 +83,16 @@ export default function FPSGun() {
     
     // Position gun relative to camera (FPS style)
     const cameraWorldPosition = new Vector3()
-    const cameraWorldQuaternion = camera.getWorldQuaternion(camera.quaternion.clone())
     camera.getWorldPosition(cameraWorldPosition)
     
-    // Apply gun offset in camera space
-    const offsetInWorldSpace = gunOffset.clone().applyQuaternion(cameraWorldQuaternion)
-    gunGroupRef.current.position.copy(cameraWorldPosition.add(offsetInWorldSpace))
-    gunGroupRef.current.quaternion.copy(cameraWorldQuaternion)
+    // Apply gun offset in camera space - use camera's rotation matrix for proper positioning
+    const offsetInWorldSpace = gunOffset.clone().applyMatrix4(camera.matrixWorld)
+    const gunPosition = cameraWorldPosition.clone().add(offsetInWorldSpace.sub(cameraWorldPosition))
+    gunGroupRef.current.position.copy(gunPosition)
+    
+    // Use camera's rotation but apply it more smoothly for FPS feel
+    gunGroupRef.current.rotation.copy(camera.rotation)
+    gunGroupRef.current.updateMatrix()
     
     // Handle recoil animation
     if (isRecoiling) {
@@ -100,10 +103,10 @@ export default function FPSGun() {
         const recoilProgress = Math.sin(recoilTimeRef.current * Math.PI)
         const recoilIntensity = 0.1
         
-        gunGroupRef.current.position.add(
-          new Vector3(0, recoilProgress * recoilIntensity * 0.5, recoilProgress * recoilIntensity)
-            .applyQuaternion(cameraWorldQuaternion)
-        )
+        // Apply recoil in camera space
+        const recoilOffset = new Vector3(0, recoilProgress * recoilIntensity * 0.5, recoilProgress * recoilIntensity)
+        recoilOffset.applyMatrix4(camera.matrixWorld)
+        gunGroupRef.current.position.add(recoilOffset.sub(cameraWorldPosition))
         
         // Rotational recoil
         gunGroupRef.current.rotation.x += recoilProgress * 0.1
@@ -118,12 +121,16 @@ export default function FPSGun() {
     const { shoot } = getKeys()
     if (shoot && shootCooldownRef.current <= 0) {
       // Calculate shoot direction from camera
-      const shootDirection = new Vector3(0, 0, -1).applyQuaternion(cameraWorldQuaternion).normalize()
+      const shootDirection = new Vector3(0, 0, -1)
+      shootDirection.applyMatrix4(camera.matrixWorld)
+      shootDirection.sub(cameraWorldPosition).normalize()
+      
       const shootOrigin = cameraWorldPosition.clone()
       
       // Add slight barrel offset
-      const barrelOffset = new Vector3(0, 0, -1.2).applyQuaternion(cameraWorldQuaternion)
-      shootOrigin.add(barrelOffset)
+      const barrelOffset = new Vector3(0, 0, -1.2)
+      barrelOffset.applyMatrix4(camera.matrixWorld)
+      shootOrigin.add(barrelOffset.sub(cameraWorldPosition))
       
       shootProjectile(shootOrigin, shootDirection)
       
