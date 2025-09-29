@@ -215,6 +215,17 @@ export default function Terrain({ playerRef }: TerrainProps) {
         </RigidBody>
       ))}
       
+      {/* Debug: Bright red cubes at chunk centers */}
+      {Array.from(chunksRef.current.values()).map((chunk) => (
+        <mesh
+          key={`debug-${chunk.key}`}
+          position={[chunk.x * CHUNK_SIZE + CHUNK_SIZE/2, 10, chunk.z * CHUNK_SIZE + CHUNK_SIZE/2]}
+        >
+          <boxGeometry args={[4, 4, 4]} />
+          <meshBasicMaterial color="red" />
+        </mesh>
+      ))}
+      
       {/* Grass systems for each chunk */}
       {Array.from(chunksRef.current.values()).map((chunk) => (
         <GrassSystem
