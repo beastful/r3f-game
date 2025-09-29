@@ -32,7 +32,37 @@ npm run build
 
 # Run linting
 npm run lint
+
+# Preview production build locally
+npm run preview
 ```
+
+## 🌐 Deployment
+
+### Deploy to Vercel
+
+1. **Fork/Clone this repository**
+
+2. **Deploy to Vercel:**
+   - Visit [vercel.com](https://vercel.com)
+   - Import your repository
+   - Vercel will automatically detect the Vite framework
+   - Click Deploy!
+
+3. **Alternative: Vercel CLI**
+   ```bash
+   # Install Vercel CLI
+   npm i -g vercel
+   
+   # Deploy
+   vercel
+   ```
+
+The app is optimized for Vercel deployment with:
+- Automatic framework detection
+- Optimized build configuration
+- Code splitting for better performance
+- Proper caching headers for static assets
 
 ## 🏗️ Architecture
 
