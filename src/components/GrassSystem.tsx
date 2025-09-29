@@ -17,10 +17,10 @@ interface GrassSystemProps {
   chunkSize: number
 }
 
-const GRASS_COUNT_PER_CHUNK = 200  // Reduced for performance
-const GRASS_SIZE = 0.8
-const GRASS_HEIGHT_VARIATION = 0.4
-const WIND_STRENGTH = 0.5
+const GRASS_COUNT_PER_CHUNK = 400  // Increased for visibility
+const GRASS_SIZE = 1.5              // Bigger grass blades
+const GRASS_HEIGHT_VARIATION = 0.5   // More size variety
+const WIND_STRENGTH = 0.8            // More visible wind
 
 export default function GrassSystem({ chunkX, chunkZ, chunkSize }: GrassSystemProps) {
   const meshRef = useRef<InstancedMesh>(null)
@@ -39,19 +39,24 @@ export default function GrassSystem({ chunkX, chunkZ, chunkSize }: GrassSystemPr
       
       const terrainHeight = getTerrainHeight(worldX, worldZ)
       
-      // Check if grass should be placed here
-      if (shouldPlaceGrass(worldX, worldZ, terrainHeight)) {
-        const scale = 0.8 + Math.random() * GRASS_HEIGHT_VARIATION
-        const color = new Color().setHSL(0.3 + Math.random() * 0.1, 0.6 + Math.random() * 0.2, 0.3 + Math.random() * 0.2)
+      // For now, place grass more liberally to ensure visibility
+      const shouldPlace = shouldPlaceGrass(worldX, worldZ, terrainHeight) || (i % 3 === 0) // Force every 3rd attempt
+      
+      if (shouldPlace) {
+        const scale = 1.0 + Math.random() * GRASS_HEIGHT_VARIATION
+        const color = new Color().setHSL(0.25 + Math.random() * 0.15, 0.7 + Math.random() * 0.2, 0.4 + Math.random() * 0.2)
         
         instances.push({
-          position: new Vector3(worldX, terrainHeight, worldZ),
+          position: new Vector3(worldX, terrainHeight + 0.1, worldZ), // Slightly above terrain
           scale,
           color,
           windOffset: Math.random() * Math.PI * 2
         })
       }
     }
+    
+    // Debug: Log grass instance count
+    console.log(`Chunk (${chunkX}, ${chunkZ}): Generated ${instances.length} grass instances`)
     
     return instances
   }, [chunkX, chunkZ, chunkSize])
