@@ -12,6 +12,7 @@ const map = [
   { name: Controls.left, keys: ['ArrowLeft', 'a', 'A'] },
   { name: Controls.right, keys: ['ArrowRight', 'd', 'D'] },
   { name: Controls.jump, keys: ['Space'] },
+  { name: Controls.run, keys: ['Shift'] },
 ]
 
 function App() {
@@ -42,7 +43,9 @@ function App() {
       }}>
         <div>🎮 R3F Walking Game</div>
         <div>WASD / Arrow Keys: Move</div>
+        <div>Shift: Run</div>
         <div>Space: Jump</div>
+        <div>Mouse: Look Around</div>
       </div>
     </div>
   )
