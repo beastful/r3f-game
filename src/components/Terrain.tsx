@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
+import { useMemo, useState, useRef, useCallback } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody } from '@react-three/rapier'
 import { 
@@ -22,13 +22,17 @@ interface TerrainChunk {
   material: ShaderMaterial
 }
 
-const CHUNK_SIZE = 50
-const CHUNK_RESOLUTION = 32
-const RENDER_DISTANCE = 2 // Chunks around player
+// Optimized parameters for better performance
+const CHUNK_SIZE = 64        // Larger chunks = fewer chunks total
+const CHUNK_RESOLUTION = 16  // Reduced from 32 = 4x fewer vertices!
+const RENDER_DISTANCE = 1    // Reduced from 2 = 9 chunks instead of 25
 
 export default function Terrain({ playerRef }: TerrainProps) {
-  const [chunks, setChunks] = useState<Map<string, TerrainChunk>>(new Map())
-  const lastPlayerChunk = useRef({ x: 0, z: 0 })
+  // Use ref instead of state to avoid triggering re-renders
+  const chunksRef = useRef<Map<string, TerrainChunk>>(new Map())
+  const [, forceUpdate] = useState({}) // Only for triggering render when needed
+  const lastPlayerChunk = useRef({ x: 999999, z: 999999 }) // Force initial load
+  const frameCount = useRef(0)
   
   // Shared shader material for all chunks
   const sharedMaterial = useMemo(() => new ShaderMaterial({
@@ -60,7 +64,7 @@ export default function Terrain({ playerRef }: TerrainProps) {
   }), [])
 
   const getHeightBasedColor = useCallback((height: number) => {
-    const normalizedHeight = (height + 10) / 20 // Normalize to 0-1 based on expected range
+    const normalizedHeight = (height + 10) / 20
     const color = new Color()
     
     if (normalizedHeight < 0.2) {
@@ -87,12 +91,9 @@ export default function Terrain({ playerRef }: TerrainProps) {
         const x = chunkX * CHUNK_SIZE + (i / CHUNK_RESOLUTION) * CHUNK_SIZE
         const z = chunkZ * CHUNK_SIZE + (j / CHUNK_RESOLUTION) * CHUNK_SIZE
         
-        // Use Perlin noise for consistent terrain height
         const height = getTerrainHeight(x, z)
-        
         vertices.push(x, height, z)
         
-        // Add height-based color
         const color = getHeightBasedColor(height)
         colors.push(color.r, color.g, color.b)
       }
@@ -106,7 +107,6 @@ export default function Terrain({ playerRef }: TerrainProps) {
         const c = a + CHUNK_RESOLUTION + 1
         const d = c + 1
         
-        // Counter-clockwise winding for correct normals
         indices.push(a, b, c)
         indices.push(b, d, c)
       }
@@ -131,16 +131,17 @@ export default function Terrain({ playerRef }: TerrainProps) {
     const playerChunkX = Math.floor(playerX / CHUNK_SIZE)
     const playerChunkZ = Math.floor(playerZ / CHUNK_SIZE)
 
-    // Check if we need to update chunks
+    // Only update if player moved far enough
     const distanceFromLastUpdate = Math.abs(playerChunkX - lastPlayerChunk.current.x) + 
                                    Math.abs(playerChunkZ - lastPlayerChunk.current.z)
     
     if (distanceFromLastUpdate === 0) {
-      return // No need to update
+      return // No change needed
     }
 
     lastPlayerChunk.current = { x: playerChunkX, z: playerChunkZ }
 
+    const currentChunks = chunksRef.current
     const newChunks = new Map<string, TerrainChunk>()
 
     // Generate chunks around player
@@ -149,8 +150,8 @@ export default function Terrain({ playerRef }: TerrainProps) {
         const key = `${x},${z}`
         
         // Reuse existing chunk or create new one
-        if (chunks.has(key)) {
-          newChunks.set(key, chunks.get(key)!)
+        if (currentChunks.has(key)) {
+          newChunks.set(key, currentChunks.get(key)!)
         } else {
           newChunks.set(key, createChunk(x, z))
         }
@@ -158,31 +159,47 @@ export default function Terrain({ playerRef }: TerrainProps) {
     }
 
     // Dispose of old chunks that are no longer needed
-    chunks.forEach((chunk, key) => {
+    currentChunks.forEach((chunk, key) => {
       if (!newChunks.has(key)) {
         chunk.geometry.dispose()
       }
     })
 
-    setChunks(newChunks)
-  }, [chunks, createChunk])
+    chunksRef.current = newChunks
+    
+    // Force a re-render only when chunks actually change
+    forceUpdate({})
+  }, [createChunk])
 
-  // Listen for player movement and update chunks
+  // Throttled chunk updates - only check every few frames
   useFrame(() => {
+    frameCount.current += 1
+    
+    // Only check for updates every 10 frames (reduce from every frame)
+    if (frameCount.current % 10 !== 0) {
+      return
+    }
+    
     if (playerRef.current?.position) {
       const { x, z } = playerRef.current.position
-      updateChunks(x, z)
+      
+      // Only update if player moved significantly
+      const currentChunkX = Math.floor(x / CHUNK_SIZE)
+      const currentChunkZ = Math.floor(z / CHUNK_SIZE)
+      const lastChunkX = lastPlayerChunk.current.x
+      const lastChunkZ = lastPlayerChunk.current.z
+      
+      const distance = Math.abs(currentChunkX - lastChunkX) + Math.abs(currentChunkZ - lastChunkZ)
+      
+      if (distance > 0) {
+        updateChunks(x, z)
+      }
     }
   })
 
-  // Initialize with chunks around origin
-  useEffect(() => {
-    updateChunks(0, 0)
-  }, [updateChunks])
-
   return (
     <>
-      {Array.from(chunks.values()).map((chunk) => (
+      {Array.from(chunksRef.current.values()).map((chunk) => (
         <RigidBody
           key={chunk.key}
           type="fixed"
