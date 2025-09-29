@@ -7,10 +7,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Lock files - let users generate their own
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
 dist
 dist-ssr
 *.local
+
+# Archives
+*.tar.gz
+*.zip
 
 # Editor directories and files
 .vscode/*

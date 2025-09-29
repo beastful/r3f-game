@@ -20,8 +20,18 @@ A 3D walking game built with **React Three Fiber** and **Rapier.js** featuring i
 
 ## 🚀 Getting Started
 
+### Prerequisites
+- **Node.js** 20.19+ or 22.12+ (for Vite compatibility)
+- **npm**, **yarn**, or **pnpm**
+
+### Installation & Development
+
 ```bash
-# Install dependencies
+# Clone the repository
+git clone https://github.com/beastful/r3f-game.git
+cd r3f-game
+
+# Install dependencies (this will generate package-lock.json)
 npm install
 
 # Start development server
@@ -36,6 +46,9 @@ npm run lint
 # Preview production build locally
 npm run preview
 ```
+
+### 📦 Package Management
+This repository doesn't include `package-lock.json` to avoid lock file conflicts. The dependencies will be resolved based on the version ranges in `package.json` when you run `npm install`.
 
 ## 🌐 Deployment
 
