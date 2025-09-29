@@ -10,6 +10,7 @@ import {
 } from 'three'
 import { getTerrainHeight } from '../utils/noise'
 import GrassSystem from './GrassSystem'
+import ModelSystem from './ModelSystem'
 
 interface TerrainProps {
   playerRef: React.MutableRefObject<{ position: Vector3 } | null>
@@ -230,6 +231,16 @@ export default function Terrain({ playerRef }: TerrainProps) {
       {Array.from(chunksRef.current.values()).map((chunk) => (
         <GrassSystem
           key={`grass-${chunk.key}`}
+          chunkX={chunk.x}
+          chunkZ={chunk.z}
+          chunkSize={CHUNK_SIZE}
+        />
+      ))}
+      
+      {/* 3D Model systems for each chunk */}
+      {Array.from(chunksRef.current.values()).map((chunk) => (
+        <ModelSystem
+          key={`models-${chunk.key}`}
           chunkX={chunk.x}
           chunkZ={chunk.z}
           chunkSize={CHUNK_SIZE}
